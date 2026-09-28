@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPv4 Master | Ambientes Computacionais</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        net: { DEFAULT: '#38bdf8', dark: '#0284c7' }, // Cyan
+                        host: { DEFAULT: '#34d399', dark: '#059669' }, // Emerald
+                        accent: { DEFAULT: '#6366f1', hover: '#4f46e5' } // Indigo
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-input {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glass-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
+        }
+
+        /* Bit Pulse Animations */
+        .bit-box {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bit-box:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #818cf8;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #1e293b;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Header -->
+    <header class="border-b border-slate-800/80 glass-card sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-emerald-400 p-0.5 shadow-lg shadow-indigo-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid fa-network-wired text-indigo-400 text-xl"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-indigo-300">
+                        IPv4 Explorer & Lab
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Disciplina de Ambientes Computacionais</p>
+                </div>
+            </div>
+
+            <!-- Preset / Slide Example Quick Button -->
+            <button onclick="loadSlideExample()" class="hidden md:flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/20 transition-all">
+                <i class="fa-solid fa-bookmark"></i>
+                <span>Exemplo do Slide (188.200.20.155)</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Navigation Tabs -->
+        <nav class="flex space-x-2 p-1.5 glass-card rounded-2xl mb-8 overflow-x-auto" aria-label="Tabs">
+            <button onclick="switchTab('inspector')" id="tab-inspector" class="nav-tab flex-1 min-w-[140px] py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Inspetor IPv4</span>
+            </button>
+            <button onclick="switchTab('guide')" id="tab-guide" class="nav-tab flex-1 min-w-[140px] py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 text-slate-400 hover:text-slate-200 transition-all">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Guia de Classes</span>
+            </button>
+            <button onclick="switchTab('quiz')" id="tab-quiz" class="nav-tab flex-1 min-w-[140px] py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 text-slate-400 hover:text-slate-200 transition-all">
+                <i class="fa-solid fa-gamepad"></i>
+                <span>Modo Treino</span>
+            </button>
+            <button onclick="switchTab('simulator')" id="tab-simulator" class="nav-tab flex-1 min-w-[140px] py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 text-slate-400 hover:text-slate-200 transition-all">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Simulador Visual</span>
+            </button>
+        </nav>
+
+        <!-- TAB 1: INSPECTOR & CALCULATOR -->
+        <section id="content-inspector" class="tab-content space-y-6">
+            <!-- Input & Quick Actions -->
+            <div class="glass-card p-6 rounded-2xl shadow-xl">
+                <label for="ip-input" class="block text-sm font-semibold text-slate-300 mb-2 flex justify-between items-center">
+                    <span>Digite um Endereço IPv4 em Notação Decimal Decimal por Ponto:</span>
+                    <span class="text-xs text-indigo-400 font-mono">Exemplo: 188.200.20.155</span>
+                </label>
+                <div class="relative flex items-center">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-ethernet text-lg"></i>
+                    </div>
+                    <input type="text" id="ip-input" value="188.200.20.155" oninput="calculateIPv4()" placeholder="ex: 192.168.0.1" 
+                        class="w-full pl-12 pr-32 py-4 glass-input text-lg font-mono text-white rounded-xl focus:outline-none tracking-wider">
+                    <div class="absolute right-2 flex space-x-2">
+                        <button onclick="setRandomIP()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700 transition-all">
+                            <i class="fa-solid fa-shuffle mr-1"></i> Aleatório
+                        </button>
+                    </div>
+                </div>
+                <p id="ip-error" class="hidden text-red-400 text-xs mt-2 flex items-center">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Endereço IPv4 inválido! Digite 4 octetos de 0 a 255 (ex: 192.168.1.1).
+                </p>
+            </div>
+
+            <!-- Special Status Badge Row -->
+            <div id="special-badge-container" class="hidden"></div>
+
+            <!-- Visual NET-ID vs HOST-ID Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Class & Structure Overview -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Classificação</span>
+                                <h3 id="res-class-title" class="text-3xl font-extrabold text-indigo-400 mt-1">Classe B</h3>
+                            </div>
+                            <span id="res-class-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                1º Octeto: 188
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-4 my-6">
+                            <div>
+                                <span class="text-xs text-slate-400 block mb-1">Estrutura do Endereço:</span>
+                                <div id="res-structure-pattern" class="flex items-center space-x-2 font-mono text-xl font-bold">
+                                    <!-- Dynamic N.N.H.H badges -->
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300">
+                                <span class="font-bold text-indigo-400">Faixa do 1º Octeto:</span> <span id="res-octet-range">128 a 191</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Net ID & Host ID Highlights -->
+                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
+                        <div class="p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/30">
+                            <div class="flex items-center space-x-2 text-cyan-400 mb-1">
+                                <i class="fa-solid fa-network-wired text-xs"></i>
+                                <span class="text-xs font-bold uppercase">NET-ID (Rede)</span>
+                            </div>
+                            <span id="res-net-id" class="text-xl font-extrabold font-mono text-cyan-300">188.200</span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30">
+                            <div class="flex items-center space-x-2 text-emerald-400 mb-1">
+                                <i class="fa-solid fa-desktop text-xs"></i>
+                                <span class="text-xs font-bold uppercase">HOST-ID (Máquina)</span>
+                            </div>
+                            <span id="res-host-id" class="text-xl font-extrabold font-mono text-emerald-300">20.155</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Binary Representation breakdown -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-white flex items-center">
+                                <i class="fa-solid fa-binary text-indigo-400 mr-2"></i>
+                                Representação Binária (32 Bits)
+                            </h3>
+                            <span class="text-xs text-slate-400 font-mono">4 Octetos (4 Bytes)</span>
+                        </div>
+                        
+                        <p class="text-xs text-slate-400 mb-4">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 mr-1"></span> Bits de Rede (NET-ID)
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ml-3 mr-1"></span> Bits de Hospedeiro (HOST-ID)
+                        </p>
+
+                        <div id="res-binary-display" class="grid grid-cols-4 gap-2 mb-4 font-mono text-center">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs font-mono text-slate-300 flex justify-between items-center">
+                        <span class="text-slate-400">Notação Binária Completa:</span>
+                        <span id="res-binary-full" class="text-indigo-300 font-bold tracking-widest text-xs">11000000.10101000...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Network Parameters Table -->
+            <div class="glass-card rounded-2xl p-6 overflow-hidden">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                    <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i>
+                    Parâmetros Fundamentais da Rede
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Endereço da Rede -->
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Endereço de Rede</span>
+                        <span id="res-net-addr" class="text-lg font-mono font-bold text-cyan-400">188.200.0.0</span>
+                        <p class="text-[11px] text-slate-400 mt-1">HOST-ID preenchido com todos os bits 0.</p>
+                    </div>
+
+                    <!-- Endereço de Broadcast -->
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Endereço de Broadcast</span>
+                        <span id="res-broadcast-addr" class="text-lg font-mono font-bold text-amber-400">188.200.255.255</span>
+                        <p class="text-[11px] text-slate-400 mt-1">HOST-ID preenchido com todos os bits 1.</p>
+                    </div>
+
+                    <!-- Primeiro IP Válido -->
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">1º IP Válido para Host</span>
+                        <span id="res-first-ip" class="text-lg font-mono font-bold text-emerald-400">188.200.0.1</span>
+                        <p class="text-[11px] text-slate-400 mt-1">Primeiro endereço utilizável em máquinas.</p>
+                    </div>
+
+                    <!-- Último IP Válido -->
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Último IP Válido para Host</span>
+                        <span id="res-last-ip" class="text-lg font-mono font-bold text-emerald-400">188.200.255.254</span>
+                        <p class="text-[11px] text-slate-400 mt-1">Último endereço utilizável antes do broadcast.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: CLASS GUIDE & RESERVED IP REFERENCE -->
+        <section id="content-guide" class="tab-content space-y-6 hidden">
+            <!-- Header Banner -->
+            <div class="glass-card p-6 rounded-2xl">
+                <h2 class="text-2xl font-extrabold text-white mb-2">Classes de Endereçamento IPv4</h2>
+                <p class="text-sm text-slate-300">
+                    Na arquitetura TCP/IP v4, os endereços são divididos em 5 classes principais. Para identificar a classe de um IP, basta analisar a faixa numérica do <strong>1º Octeto (primeiro byte)</strong>.
+                </p>
+            </div>
+
+            <!-- Classes Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Classe A -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-blue-500 hover:border-slate-700 transition-all">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-2xl font-black text-blue-400">Classe A</span>
+                        <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">0 - 127</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="p-2.5 rounded-lg bg-slate-900/80 text-center font-mono font-bold text-lg text-slate-200">
+                            <span class="text-cyan-400">N</span>.<span class="text-emerald-400">H</span>.<span class="text-emerald-400">H</span>.<span class="text-emerald-400">H</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong>1 Byte para Rede</strong> (Net-ID) e <strong>3 Bytes para Hosts</strong>. Utilizada para redes de altíssimo porte com até 16,7 milhões de máquinas.
+                        </p>
+                        <div class="text-[11px] text-slate-500 font-mono">Bit Inicial: 0...</div>
+                    </div>
+                </div>
+
+                <!-- Classe B -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-indigo-500 hover:border-slate-700 transition-all">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-2xl font-black text-indigo-400">Classe B</span>
+                        <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">128 - 191</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="p-2.5 rounded-lg bg-slate-900/80 text-center font-mono font-bold text-lg text-slate-200">
+                            <span class="text-cyan-400">N</span>.<span class="text-cyan-400">N</span>.<span class="text-emerald-400">H</span>.<span class="text-emerald-400">H</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong>2 Bytes para Rede</strong> e <strong>2 Bytes para Hosts</strong>. Projetada para corporações e universidades de médio a grande porte (até 65 mil hosts).
+                        </p>
+                        <div class="text-[11px] text-slate-500 font-mono">Bits Iniciais: 10...</div>
+                    </div>
+                </div>
+
+                <!-- Classe C -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-500 hover:border-slate-700 transition-all">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-2xl font-black text-emerald-400">Classe C</span>
+                        <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">192 - 223</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="p-2.5 rounded-lg bg-slate-900/80 text-center font-mono font-bold text-lg text-slate-200">
+                            <span class="text-cyan-400">N</span>.<span class="text-cyan-400">N</span>.<span class="text-cyan-400">N</span>.<span class="text-emerald-400">H</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong>3 Bytes para Rede</strong> e <strong>1 Byte para Host</strong>. Ideal para redes locais (LANs) pequenas ou residenciais (até 254 hosts por rede).
+                        </p>
+                        <div class="text-[11px] text-slate-500 font-mono">Bits Iniciais: 110...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multicast & Reserved (D & E) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Classe D -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-purple-500">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xl font-bold text-purple-400">Classe D: Multicast</span>
+                        <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">224 - 239</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Não dividida em Net-ID/Host-ID. Utilizada para transmissões de <strong>Multicast</strong> (envio de pacotes para múltiplos receptores simultaneamente, ex: streaming/roteamento).
+                    </p>
+                </div>
+
+                <!-- Classe E -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-rose-500">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xl font-bold text-rose-400">Classe E: Reservados</span>
+                        <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">240 - 255</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Não utilizada em hosts comuns. Faixa reservada pela IANA para <strong>uso experimental</strong>, pesquisas científicas e desenvolvimentos futuros do protocolo.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Reserved Specific IPs Card -->
+            <div class="glass-card p-6 rounded-2xl">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                    <i class="fa-solid fa-shield-halved text-amber-400 mr-2"></i>
+                    Endereços Especiais e Reservados na Prática
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-900/70 border border-slate-800">
+                        <div class="text-amber-400 font-mono font-bold text-lg mb-1">0.X.X.X</div>
+                        <div class="text-xs font-semibold text-slate-200">Rede Corrente</div>
+                        <p class="text-[11px] text-slate-400 mt-1">Nenhum IP configurado em host pode começar com 0. Indica "esta rede" ou host não configurado.</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-900/70 border border-slate-800">
+                        <div class="text-indigo-400 font-mono font-bold text-lg mb-1">127.X.X.X</div>
+                        <div class="text-xs font-semibold text-slate-200">Diagnóstico / Loopback</div>
+                        <p class="text-[11px] text-slate-400 mt-1">Utilizado para testes internos da própria placa de rede (ex: <code class="text-indigo-300">127.0.0.1</code> localhost).</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-900/70 border border-slate-800">
+                        <div class="text-emerald-400 font-mono font-bold text-lg mb-1">255.255.255.255</div>
+                        <p class="text-xs font-semibold text-slate-200">Broadcast Geral</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Servindo como endereço de broadcast limitado para envio a todos os computadores da rede local.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PRACTICE & QUIZ MODE -->
+        <section id="content-quiz" class="tab-content space-y-6 hidden">
+            <!-- Score Bar -->
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="p-3 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                        <i class="fa-solid fa-trophy text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider block">Desafio de Endereçamento</span>
+                        <h3 class="text-lg font-bold text-white">Modo Treino do Estudante</h3>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">Pontuação</span>
+                        <span id="quiz-score" class="text-2xl font-extrabold text-emerald-400">0</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">Sequência (Streak)</span>
+                        <span id="quiz-streak" class="text-2xl font-extrabold text-amber-400 flex items-center">
+                            <i class="fa-solid fa-fire text-sm mr-1"></i> 0
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Question Card -->
+            <div class="glass-card p-6 rounded-2xl shadow-xl space-y-6">
+                <div class="flex justify-between items-center pb-4 border-b border-slate-800">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Exercício de Fixação</span>
+                        <h3 class="text-2xl font-black text-white mt-1">
+                            Dado o endereço IP: <span id="quiz-target-ip" class="font-mono text-indigo-300 underline decoration-indigo-500 decoration-wavy underline-offset-4">188.200.20.155</span>
+                        </h3>
+                    </div>
+                    <button onclick="generateQuizQuestion()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>Gerar Novo IP</span>
+                    </button>
+                </div>
+
+                <!-- Quiz Form Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Q1: Classe -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">1. Qual a Classe?</label>
+                        <select id="q-class" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                            <option value="">Selecione...</option>
+                            <option value="A">Classe A</option>
+                            <option value="B">Classe B</option>
+                            <option value="C">Classe C</option>
+                        </select>
+                        <span id="feedback-class" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+
+                    <!-- Q2: Net-ID -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">2. Indique o Net-ID:</label>
+                        <input type="text" id="q-netid" placeholder="ex: 188.200" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                        <span id="feedback-netid" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+
+                    <!-- Q3: Host-ID -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">3. Indique o Host-ID:</label>
+                        <input type="text" id="q-hostid" placeholder="ex: 20.155" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                        <span id="feedback-hostid" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+
+                    <!-- Q4: Endereço de Rede -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">4. Endereço da Rede:</label>
+                        <input type="text" id="q-netaddr" placeholder="ex: 188.200.0.0" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                        <span id="feedback-netaddr" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+
+                    <!-- Q5: Endereço de Broadcast -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">5. Endereço de Broadcast:</label>
+                        <input type="text" id="q-broadcast" placeholder="ex: 188.200.255.255" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                        <span id="feedback-broadcast" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+
+                    <!-- Q6: 1º IP Válido -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">6. 1º Endereço Válido:</label>
+                        <input type="text" id="q-firstip" placeholder="ex: 188.200.0.1" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                        <span id="feedback-firstip" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+
+                    <!-- Q7: Último IP Válido -->
+                    <div class="md:col-span-2 lg:col-span-3">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">7. Último Endereço Válido:</label>
+                        <input type="text" id="q-lastip" placeholder="ex: 188.200.255.254" class="w-full glass-input py-2.5 px-3 rounded-xl font-mono text-sm text-white focus:outline-none">
+                        <span id="feedback-lastip" class="text-[11px] mt-1 block hidden font-medium"></span>
+                    </div>
+                </div>
+
+                <!-- Submit Button & Feedback Summary -->
+                <div class="pt-4 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <button onclick="checkQuizAnswers()" class="w-full md:w-auto px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Validar Minhas Respostas</span>
+                    </button>
+
+                    <div id="quiz-result-message" class="hidden text-sm font-semibold p-3 rounded-xl w-full md:w-auto text-center"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: INTERACTIVE OCTET SIMULATOR -->
+        <section id="content-simulator" class="tab-content space-y-6 hidden">
+            <div class="glass-card p-6 rounded-2xl">
+                <h2 class="text-2xl font-extrabold text-white mb-1">Simulador de Sliders de Octetos</h2>
+                <p class="text-sm text-slate-300">
+                    Mova os sliders de cada byte (0 a 255) para observar a alteração em tempo real do valor binário, da classe e da divisão NET-ID / HOST-ID.
+                </p>
+            </div>
+
+            <!-- Current IP Display Banner -->
+            <div class="glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-2 border-indigo-500/30">
+                <div class="text-center md:text-left">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">IP Gerado em Tempo Real</span>
+                    <div id="sim-ip-display" class="text-4xl md:text-5xl font-black font-mono text-white tracking-wider mt-1">
+                        192.168.1.100
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-center p-3 rounded-xl bg-slate-900/80 border border-slate-800 min-w-[100px]">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Classe</span>
+                        <span id="sim-class-display" class="text-2xl font-extrabold text-emerald-400">C</span>
+                    </div>
+                    <div class="text-center p-3 rounded-xl bg-slate-900/80 border border-slate-800 min-w-[120px]">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Padrão</span>
+                        <span id="sim-pattern-display" class="text-xl font-extrabold text-cyan-400 font-mono">N.N.N.H</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Sliders Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Octet 1 -->
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">1º Octeto (Byte 1)</span>
+                        <span id="sim-o1-val" class="font-mono font-extrabold text-lg text-indigo-400">192</span>
+                    </div>
+                    <input type="range" id="sim-slider-1" min="0" max="255" value="192" oninput="updateSimulator()" class="w-full">
+                    
+                    <!-- Binary breakdown for Octet 1 -->
+                    <div id="sim-o1-bits" class="grid grid-cols-8 gap-1 pt-2"></div>
+                </div>
+
+                <!-- Octet 2 -->
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">2º Octeto (Byte 2)</span>
+                        <span id="sim-o2-val" class="font-mono font-extrabold text-lg text-indigo-400">168</span>
+                    </div>
+                    <input type="range" id="sim-slider-2" min="0" max="255" value="168" oninput="updateSimulator()" class="w-full">
+                    
+                    <!-- Binary breakdown for Octet 2 -->
+                    <div id="sim-o2-bits" class="grid grid-cols-8 gap-1 pt-2"></div>
+                </div>
+
+                <!-- Octet 3 -->
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">3º Octeto (Byte 3)</span>
+                        <span id="sim-o3-val" class="font-mono font-extrabold text-lg text-indigo-400">1</span>
+                    </div>
+                    <input type="range" id="sim-slider-3" min="0" max="255" value="1" oninput="updateSimulator()" class="w-full">
+                    
+                    <!-- Binary breakdown for Octet 3 -->
+                    <div id="sim-o3-bits" class="grid grid-cols-8 gap-1 pt-2"></div>
+                </div>
+
+                <!-- Octet 4 -->
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">4º Octeto (Byte 4)</span>
+                        <span id="sim-o4-val" class="font-mono font-extrabold text-lg text-indigo-400">100</span>
+                    </div>
+                    <input type="range" id="sim-slider-4" min="0" max="255" value="100" oninput="updateSimulator()" class="w-full">
+                    
+                    <!-- Binary breakdown for Octet 4 -->
+                    <div id="sim-o4-bits" class="grid grid-cols-8 gap-1 pt-2"></div>
+                </div>
+            </div>
+
+            <!-- Bit Weights Reference Bar -->
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+                <span class="text-xs text-slate-400 font-semibold block mb-2">Pesos Posicionais de Cada Bit em um Octeto (2⁷ até 2⁰):</span>
+                <div class="flex justify-center space-x-2 font-mono text-xs text-slate-300">
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">128</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">64</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">32</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">16</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">8</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">4</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">2</span>
+                    <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700">1</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500 glass-card mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Desenvolvido para auxílio didático na disciplina de <strong>Ambientes Computacionais</strong> &bull; Endereçamento IPv4 TCP/IP v4 - Prof.: Artur Marcos Coelho - Colégio e Faculdade Cotemig</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentQuizData = null;
+        let score = 0;
+        let streak = 0;
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
+                el.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
+            activeBtn.classList.remove('text-slate-400');
+
+            if(tabId === 'simulator') {
+                updateSimulator();
+            }
+        }
+
+        // Convert Integer to 8-bit padded string
+        function toBinaryString(num) {
+            return (num >>> 0).toString(2).padStart(8, '0');
+        }
+
+        // Validate IP syntax
+        function parseIPv4(ipStr) {
+            if (!ipStr) return null;
+            const parts = ipStr.trim().split('.');
+            if (parts.length !== 4) return null;
+
+            const octets = [];
+            for (let i = 0; i < 4; i++) {
+                if (!/^\d+$/.test(parts[i])) return null;
+                const num = parseInt(parts[i], 10);
+                if (num < 0 || num > 255) return null;
+                octets.push(num);
+            }
+            return octets;
+        }
+
+        function calculateIPv4() {
+            const inputVal = document.getElementById('ip-input').value;
+            const errorEl = document.getElementById('ip-error');
+            const octets = parseIPv4(inputVal);
+
+            if (!octets) {
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            const [o1, o2, o3, o4] = octets;
+            let ipClass = '';
+            let patternHTML = '';
+            let rangeText = '';
+            let netIdStr = '';
+            let hostIdStr = '';
+            let netAddr = '';
+            let broadcastAddr = '';
+            let firstIp = '';
+            let lastIp = '';
+            let netOctetCount = 0; // Number of net octets (1, 2, 3)
+
+            // Special badge check
+            const badgeContainer = document.getElementById('special-badge-container');
+            badgeContainer.innerHTML = '';
+            let isSpecial = false;
+
+            if (o1 === 0) {
+                isSpecial = true;
+                badgeContainer.innerHTML += `
+                    <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center space-x-3 mb-6">
+                        <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                        <div>
+                            <strong>Endereço Reservado (Rede Corrente):</strong> IPs iniciados com 0 indicam a própria rede local e não podem ser atribuídos a hosts comuns.
+                        </div>
+                    </div>`;
+            } else if (o1 === 127) {
+                isSpecial = true;
+                badgeContainer.innerHTML += `
+                    <div class="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs flex items-center space-x-3 mb-6">
+                        <i class="fa-solid fa-rotate-left text-lg"></i>
+                        <div>
+                            <strong>Endereço Reservado (Loopback / Diagnóstico):</strong> A faixa 127.X.X.X é reservada para testes locais (ex: 127.0.0.1 localhost).
+                        </div>
+                    </div>`;
+            }
+
+            if (isSpecial) {
+                badgeContainer.classList.remove('hidden');
+            } else {
+                badgeContainer.classList.add('hidden');
+            }
+
+            // Determine Class & Subnets
+            if (o1 >= 0 && o1 <= 127) {
+                ipClass = 'Classe A';
+                netOctetCount = 1;
+                rangeText = '0 a 127';
+                patternHTML = `<span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">N</span>.<span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">H</span>.<span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">H</span>.<span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">H</span>`;
+                netIdStr = `${o1}`;
+                hostIdStr = `${o2}.${o3}.${o4}`;
+                netAddr = `${o1}.0.0.0`;
+                broadcastAddr = `${o1}.255.255.255`;
+                firstIp = `${o1}.0.0.1`;
+                lastIp = `${o1}.255.255.254`;
+            } else if (o1 >= 128 && o1 <= 191) {
+                ipClass = 'Classe B';
+                netOctetCount = 2;
+                rangeText = '128 a 191';
+                patternHTML = `<span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">N</span>.<span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">N</span>.<span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">H</span>.<span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">H</span>`;
+                netIdStr = `${o1}.${o2}`;
+                hostIdStr = `${o3}.${o4}`;
+                netAddr = `${o1}.${o2}.0.0`;
+                broadcastAddr = `${o1}.${o2}.255.255`;
+                firstIp = `${o1}.${o2}.0.1`;
+                lastIp = `${o1}.${o2}.255.254`;
+            } else if (o1 >= 192 && o1 <= 223) {
+                ipClass = 'Classe C';
+                netOctetCount = 3;
+                rangeText = '192 a 223';
+                patternHTML = `<span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">N</span>.<span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">N</span>.<span class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">N</span>.<span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">H</span>`;
+                netIdStr = `${o1}.${o2}.${o3}`;
+                hostIdStr = `${o4}`;
+                netAddr = `${o1}.${o2}.${o3}.0`;
+                broadcastAddr = `${o1}.${o2}.${o3}.255`;
+                firstIp = `${o1}.${o2}.${o3}.1`;
+                lastIp = `${o1}.${o2}.${o3}.254`;
+            } else if (o1 >= 224 && o1 <= 239) {
+                ipClass = 'Classe D (Multicast)';
+                netOctetCount = 0;
+                rangeText = '224 a 239';
+                patternHTML = `<span class="px-3 py-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">MULTICAST</span>`;
+                netIdStr = 'N/A';
+                hostIdStr = 'N/A';
+                netAddr = 'N/A (Multicast)';
+                broadcastAddr = 'N/A (Multicast)';
+                firstIp = 'N/A';
+                lastIp = 'N/A';
+            } else {
+                ipClass = 'Classe E (Reservado)';
+                netOctetCount = 0;
+                rangeText = '240 a 255';
+                patternHTML = `<span class="px-3 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">RESERVADO</span>`;
+                netIdStr = 'N/A';
+                hostIdStr = 'N/A';
+                netAddr = 'N/A (Experimental)';
+                broadcastAddr = 'N/A (Experimental)';
+                firstIp = 'N/A';
+                lastIp = 'N/A';
+            }
+
+            // Update UI
+            document.getElementById('res-class-title').innerText = ipClass;
+            document.getElementById('res-class-badge').innerText = `1º Octeto: ${o1}`;
+            document.getElementById('res-structure-pattern').innerHTML = patternHTML;
+            document.getElementById('res-octet-range').innerText = rangeText;
+
+            document.getElementById('res-net-id').innerText = netIdStr;
+            document.getElementById('res-host-id').innerText = hostIdStr;
+
+            document.getElementById('res-net-addr').innerText = netAddr;
+            document.getElementById('res-broadcast-addr').innerText = broadcastAddr;
+            document.getElementById('res-first-ip').innerText = firstIp;
+            document.getElementById('res-last-ip').innerText = lastIp;
+
+            // Render Binary Boxes
+            renderBinaryBoxes(octets, netOctetCount);
+        }
+
+        function renderBinaryBoxes(octets, netOctetCount) {
+            const container = document.getElementById('res-binary-display');
+            container.innerHTML = '';
+
+            let fullBinary = [];
+
+            octets.forEach((val, idx) => {
+                const binStr = toBinaryString(val);
+                fullBinary.push(binStr);
+
+                const isNet = idx < netOctetCount;
+                const colorClass = isNet ? 
+                    'bg-cyan-500/10 border-cyan-500/40 text-cyan-300' : 
+                    (netOctetCount === 0 ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300');
+
+                let boxHTML = `<div class="p-2 rounded-xl border ${colorClass} bit-box">
+                    <div class="text-[10px] text-slate-400 font-sans mb-1">Octeto ${idx + 1} (${val})</div>
+                    <div class="tracking-widest font-extrabold text-xs sm:text-sm">${binStr}</div>
+                </div>`;
+
+                container.innerHTML += boxHTML;
+            });
+
+            document.getElementById('res-binary-full').innerText = fullBinary.join('.');
+        }
+
+        function loadSlideExample() {
+            document.getElementById('ip-input').value = '188.200.20.155';
+            switchTab('inspector');
+            calculateIPv4();
+        }
+
+        function setRandomIP() {
+            // Generate random Class A, B, or C IP
+            const classes = ['A', 'B', 'C'];
+            const chosen = classes[Math.floor(Math.random() * classes.length)];
+            let o1, o2, o3, o4;
+
+            if (chosen === 'A') {
+                o1 = Math.floor(Math.random() * 126) + 1; // 1 - 126
+            } else if (chosen === 'B') {
+                o1 = Math.floor(Math.random() * (191 - 128 + 1)) + 128; // 128 - 191
+            } else {
+                o1 = Math.floor(Math.random() * (223 - 192 + 1)) + 192; // 192 - 223
+            }
+
+            o2 = Math.floor(Math.random() * 256);
+            o3 = Math.floor(Math.random() * 256);
+            o4 = Math.floor(Math.random() * 254) + 1;
+
+            document.getElementById('ip-input').value = `${o1}.${o2}.${o3}.${o4}`;
+            calculateIPv4();
+        }
+
+        function generateQuizQuestion() {
+            // Clear inputs and feedback
+            const fields = ['class', 'netid', 'hostid', 'netaddr', 'broadcast', 'firstip', 'lastip'];
+            fields.forEach(f => {
+                const el = document.getElementById(`q-${f}`);
+                if (el) el.value = '';
+                const fb = document.getElementById(`feedback-${f}`);
+                if (fb) fb.classList.add('hidden');
+            });
+            document.getElementById('quiz-result-message').classList.add('hidden');
+
+            // Generate Random IP for quiz
+            const classes = ['A', 'B', 'C'];
+            const chosenClass = classes[Math.floor(Math.random() * classes.length)];
+            let o1, o2, o3, o4;
+
+            if (chosenClass === 'A') {
+                o1 = Math.floor(Math.random() * 126) + 1;
+            } else if (chosenClass === 'B') {
+                o1 = Math.floor(Math.random() * (191 - 128 + 1)) + 128;
+            } else {
+                o1 = Math.floor(Math.random() * (223 - 192 + 1)) + 192;
+            }
+
+            o2 = Math.floor(Math.random() * 256);
+            o3 = Math.floor(Math.random() * 256);
+            o4 = Math.floor(Math.random() * 254) + 1;
+
+            const targetIp = `${o1}.${o2}.${o3}.${o4}`;
+            document.getElementById('quiz-target-ip').innerText = targetIp;
+
+            // Store expected answers
+            let netId, hostId, netAddr, broadcast, firstIp, lastIp;
+
+            if (chosenClass === 'A') {
+                netId = `${o1}`;
+                hostId = `${o2}.${o3}.${o4}`;
+                netAddr = `${o1}.0.0.0`;
+                broadcast = `${o1}.255.255.255`;
+                firstIp = `${o1}.0.0.1`;
+                lastIp = `${o1}.255.255.254`;
+            } else if (chosenClass === 'B') {
+                netId = `${o1}.${o2}`;
+                hostId = `${o3}.${o4}`;
+                netAddr = `${o1}.${o2}.0.0`;
+                broadcast = `${o1}.${o2}.255.255`;
+                firstIp = `${o1}.${o2}.0.1`;
+                lastIp = `${o1}.${o2}.255.254`;
+            } else {
+                netId = `${o1}.${o2}.${o3}`;
+                hostId = `${o4}`;
+                netAddr = `${o1}.${o2}.${o3}.0`;
+                broadcast = `${o1}.${o2}.${o3}.255`;
+                firstIp = `${o1}.${o2}.${o3}.1`;
+                lastIp = `${o1}.${o2}.${o3}.254`;
+            }
+
+            currentQuizData = {
+                ip: targetIp,
+                class: chosenClass,
+                netId,
+                hostId,
+                netAddr,
+                broadcast,
+                firstIp,
+                lastIp
+            };
+        }
+
+        function checkQuizAnswers() {
+            if (!currentQuizData) return;
+
+            let correctCount = 0;
+            const total = 7;
+
+            const checks = [
+                { id: 'class', expected: currentQuizData.class },
+                { id: 'netid', expected: currentQuizData.netId },
+                { id: 'hostid', expected: currentQuizData.hostId },
+                { id: 'netaddr', expected: currentQuizData.netAddr },
+                { id: 'broadcast', expected: currentQuizData.broadcast },
+                { id: 'firstip', expected: currentQuizData.firstIp },
+                { id: 'lastip', expected: currentQuizData.lastIp }
+            ];
+
+            checks.forEach(item => {
+                const inputEl = document.getElementById(`q-${item.id}`);
+                const feedbackEl = document.getElementById(`feedback-${item.id}`);
+                const userVal = inputEl.value.trim();
+
+                feedbackEl.classList.remove('hidden');
+
+                if (userVal.toLowerCase() === item.expected.toLowerCase()) {
+                    correctCount++;
+                    feedbackEl.className = 'text-[11px] mt-1 block font-medium text-emerald-400';
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-check mr-1"></i> Correto!`;
+                } else {
+                    feedbackEl.className = 'text-[11px] mt-1 block font-medium text-rose-400';
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-xmark mr-1"></i> Incorreto (Correto: ${item.expected})`;
+                }
+            });
+
+            // Score and Streak update
+            const resultMsg = document.getElementById('quiz-result-message');
+            resultMsg.classList.remove('hidden');
+
+            if (correctCount === total) {
+                score += 100;
+                streak++;
+                resultMsg.className = 'text-sm font-semibold p-3 rounded-xl w-full md:w-auto text-center bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                resultMsg.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Perfeito! Você acertou todas as 7 perguntas! (+100 pts)`;
+            } else {
+                streak = 0;
+                resultMsg.className = 'text-sm font-semibold p-3 rounded-xl w-full md:w-auto text-center bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                resultMsg.innerHTML = `<i class="fa-solid fa-circle-info mr-1"></i> Você acertou ${correctCount} de ${total}. Revise as respostas em vermelho acima!`;
+            }
+
+            document.getElementById('quiz-score').innerText = score;
+            document.getElementById('quiz-streak').innerHTML = `<i class="fa-solid fa-fire text-sm mr-1"></i> ${streak}`;
+        }
+
+        function updateSimulator() {
+            const v1 = parseInt(document.getElementById('sim-slider-1').value, 10);
+            const v2 = parseInt(document.getElementById('sim-slider-2').value, 10);
+            const v3 = parseInt(document.getElementById('sim-slider-3').value, 10);
+            const v4 = parseInt(document.getElementById('sim-slider-4').value, 10);
+
+            document.getElementById('sim-o1-val').innerText = v1;
+            document.getElementById('sim-o2-val').innerText = v2;
+            document.getElementById('sim-o3-val').innerText = v3;
+            document.getElementById('sim-o4-val').innerText = v4;
+
+            document.getElementById('sim-ip-display').innerText = `${v1}.${v2}.${v3}.${v4}`;
+
+            // Calculate Class & Pattern
+            let simClass = '';
+            let simPattern = '';
+
+            if (v1 <= 127) {
+                simClass = 'A';
+                simPattern = 'N.H.H.H';
+            } else if (v1 <= 191) {
+                simClass = 'B';
+                simPattern = 'N.N.H.H';
+            } else if (v1 <= 223) {
+                simClass = 'C';
+                simPattern = 'N.N.N.H';
+            } else if (v1 <= 239) {
+                simClass = 'D';
+                simPattern = 'Multicast';
+            } else {
+                simClass = 'E';
+                simPattern = 'Reservado';
+            }
+
+            document.getElementById('sim-class-display').innerText = simClass;
+            document.getElementById('sim-pattern-display').innerText = simPattern;
+
+            // Update Bit Visualization grids
+            renderSimBits('sim-o1-bits', v1);
+            renderSimBits('sim-o2-bits', v2);
+            renderSimBits('sim-o3-bits', v3);
+            renderSimBits('sim-o4-bits', v4);
+        }
+
+        function renderSimBits(containerId, value) {
+            const container = document.getElementById(containerId);
+            const binStr = toBinaryString(value);
+            container.innerHTML = '';
+
+            for (let i = 0; i < 8; i++) {
+                const bit = binStr[i];
+                const active = bit === '1';
+                container.innerHTML += `
+                    <div class="py-1 text-center font-mono text-xs rounded ${active ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'bg-slate-900 text-slate-500 border border-slate-800'}">
+                        ${bit}
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            calculateIPv4();
+            generateQuizQuestion();
+            updateSimulator();
+        };
+    </script>
+</body>
+</html>
